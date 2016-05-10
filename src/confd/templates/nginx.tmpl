@@ -1,11 +1,11 @@
-daemon off;
 user www-data;
 worker_processes 4;
-pid /run/nginx.pid;
+
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
 
 events {
-	worker_connections 768;
-	# multi_accept on;
+	worker_connections 1024;
 }
 
 http {
@@ -15,14 +15,7 @@ http {
 	##
 
 	sendfile on;
-	tcp_nopush on;
-	tcp_nodelay on;
 	keepalive_timeout 65;
-	types_hash_max_size 2048;
-	# server_tokens off;
-
-	# server_names_hash_bucket_size 64;
-	# server_name_in_redirect off;
 
 	include /etc/nginx/mime.types;
 	default_type application/octet-stream;
@@ -34,20 +27,6 @@ http {
 	# access_log /var/log/nginx/access.log;
 	access_log off;
 	error_log /var/log/nginx/error.log;
-
-	##
-	# Gzip Settings
-	##
-
-	gzip on;
-	gzip_disable "msie6";
-
-	# gzip_vary on;
-	# gzip_proxied any;
-	# gzip_comp_level 6;
-	# gzip_buffers 16 8k;
-	# gzip_http_version 1.1;
-	# gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
 	##
 	# Virtual Host Configs
@@ -112,14 +91,10 @@ http {
 
 			proxy_set_header X-Real-IP $remote_addr;
 			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			proxy_set_header X-Forwarded-Proto $scheme;
 			proxy_set_header Host $http_host;
 			proxy_set_header X-NginX-Proxy true;
-
-			{{if $proxy.ssl   }}
-			proxy_redirect http:// https://;
-			{{ else }}
-			proxy_redirect off;
-			{{ end }}
+			proxy_set_header X-Original-URI $request_uri;
 
 			{{if $proxy.webSocket   }}
 			proxy_http_version 1.1;
@@ -127,6 +102,12 @@ http {
 			proxy_set_header Connection "upgrade";
 			{{ end }}
 
+
+			{{if $proxy.ssl   }}
+			proxy_redirect http:// https://;
+			{{ else }}
+			proxy_redirect off;
+			{{ end }}
 			proxy_pass http://{{$data.portalIP}}:{{$data.port}};
 		}
 		{{ end }}
