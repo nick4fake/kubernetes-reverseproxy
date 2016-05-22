@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: reverseproxy
+spec:
+  replicas: 2
+  selector:
+    app: reverseproxy
+  template:
+    metadata:
+      name: reverseproxy
+      labels:
+        app: reverseproxy
+    spec:
+      hostNetwork: true
+      containers:
+      - name: kubernetes-reverseproxy
+        image: nick4fake/kubernetes-reverseproxy:0.0.1
+        env:
+          - name: CONFD_ETCD_NODE
+            value: 192.168.117.130:2379
+        ports:
+        - containerPort: 80

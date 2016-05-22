@@ -1,3 +1,4 @@
+daemon off;
 user www-data;
 worker_processes 4;
 
@@ -20,6 +21,8 @@ http {
 	include /etc/nginx/mime.types;
 	default_type application/octet-stream;
 
+        server_names_hash_bucket_size 64;
+
 	##
 	# Logging Settings
 	##
@@ -36,8 +39,8 @@ http {
 
 	{{range $spec := getvs "/registry/services/specs/*/*"}}
 	{{$data := json $spec}}
-	{{ if $data.annotations.kubernetesReverseproxy }}
-	{{$p := json $data.annotations.kubernetesReverseproxy }}
+	{{ if $data.metadata.annotations.kubernetesReverseproxy }}
+	{{$p := json $data.metadata.annotations.kubernetesReverseproxy }}
 	{{range $proxy := $p.hosts}}
 	{{if $proxy.host }}
 	server {
@@ -108,11 +111,16 @@ http {
 			{{ else }}
 			proxy_redirect off;
 			{{ end }}
-			proxy_pass http://{{$data.portalIP}}:{{$data.port}};
+			proxy_pass http://{{$data.spec.clusterIP}}:{{(index $data.spec.ports 0).port}};
 		}
 		{{ end }}
 
 	}
+    {{ else }}
+    server {
+        {{if $proxy.port }} listen {{$proxy.port}}; {{end}}
+		proxy_pass {{$data.spec.clusterIP}}:{{(index $data.spec.ports 0).port}};
+    }
 	{{ end }}
 	{{ end }}
 	{{ end }}
