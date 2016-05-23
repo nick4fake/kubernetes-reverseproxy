@@ -126,3 +126,20 @@ http {
 	{{ end }}
 	{{ end }}
 }
+
+stream {
+	{{range $spec := getvs "/registry/services/specs/*/*"}}
+	{{$data := json $spec}}
+	{{ if $data.metadata.annotations.kubernetesReverseproxy }}
+	{{$p := json $data.metadata.annotations.kubernetesReverseproxy }}
+	{{range $proxy := $p.hosts}}
+	{{if not $proxy.host }}
+    server {
+        {{if $proxy.port }} listen {{$proxy.port}}; {{end}}
+		proxy_pass {{$data.spec.clusterIP}}:{{(index $data.spec.ports 0).port}};
+    }
+	{{ end }}
+	{{ end }}
+	{{ end }}
+	{{ end }}
+}

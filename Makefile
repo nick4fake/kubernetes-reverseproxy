@@ -1,5 +1,5 @@
 NAME = nick4fake/kubernetes-reverseproxy
-VERSION = 0.0.1
+VERSION = 0.0.3
 
 .PHONY: all build push tag_latest release
 

@@ -15,9 +15,14 @@ spec:
       hostNetwork: true
       containers:
       - name: kubernetes-reverseproxy
-        image: nick4fake/kubernetes-reverseproxy:0.0.1
+        image: nick4fake/kubernetes-reverseproxy:0.0.3
         env:
           - name: CONFD_ETCD_NODE
             value: 192.168.117.130:2379
         ports:
         - containerPort: 80
+        - containerPort: 42301
+        - containerPort: 42302
+        - containerPort: 42303
+        - containerPort: 42304
+        - containerPort: 42305
